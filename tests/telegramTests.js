@@ -10,15 +10,35 @@ import assert from 'assert'
 //это, скорее, интеграционный тест?
 suite('TelegramTests', function() {
     test('ListAllContacts_LoadAllNContactsIHaveInLocalDB_GotListOfNContacts', function() {
-        DB = new Connection(DSN);
-        DB.insert([
+        let DB = new Connection(DSN);
+        let records = [
             {name:"contact #1", /*...*/},
             {name:"contact #N", /*...*/}
-        ]);
+        ];
+        DB.insert(records);
 
         let contacts = Telegram.fetchAllContacts();
 
-        assert.true(contacts.length === N);
+        assert.equal(records.length, contacts);
+
+        DB.truncate();
+    });
+
+    //такое ощущение, что для данной возможности тоже нельзя написать модульный тест. А интеграционные тесты мы ещё не прходили.
+    //явно то, что у теста можетт быть несколько причин для падения. Может, что-то с базой случилось? Или с интернет-соединением?
+    test('SendMessage_ConnectedToContact_MessageHasBeenSent', function() {
+        let DB = new Connection(DSN);
+        DB.insert([
+            {name:"contact #1", /*...*/},
+        ]);
+
+        let contact = Telegram.fetchContact(0);
+        contact.connect();
+        let message = "Hi there!";
+        let res = contact.sendMessage(message);
+
+        assert.true(res);
+        assert.equal(message, contact.getLastReceivedMessage().toString());
 
         DB.truncate();
     });
