@@ -42,4 +42,20 @@ suite('TelegramTests', function() {
 
         DB.truncate();
     });
+
+    test('CreateMultiChat_CRequested2ContactsToJoinChatRoom_ChatRoomHasBeenCreated', function() {
+        let DB = new Connection(DSN);
+        DB.insert([
+            {name:"contact #1", /*...*/},
+            {name:"contact #2", /*...*/},
+        ]);
+
+        let contact1 = Telegram.fetchContact(0),
+            contact2 = Telegram.fetchContact(1);
+        let chatRoom = Telegram.createMultiChat(contact1, contact2);
+
+        assert.equal(chatRoom, Telegram.getChatRoomByID(chatRoom.getId()));
+
+        DB.truncate();
+    });
 });
