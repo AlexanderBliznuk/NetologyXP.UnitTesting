@@ -97,4 +97,16 @@ suite('TelegramTests', function() {
         DB.truncate();
     });
 
+    test('ReceiveMessage_InitSenderAndEmitMessage_MessageHasBeenReceived', function() {
+        let sender = new Telegram.TestContact();
+        let messageSent = "Hi there!";
+        Telegram.myself().onMessageReceive = onMessageReceiveHandler;
+
+        sender.connect(Telegram.myself()).send(messageSent);
+
+        function onMessageReceiveHandler(messageGot) {
+            assert.equal(messageSent, messageGot);
+        };
+    });
+
 });
