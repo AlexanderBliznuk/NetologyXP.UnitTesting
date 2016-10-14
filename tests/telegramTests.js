@@ -43,7 +43,7 @@ suite('TelegramTests', function() {
         DB.truncate();
     });
 
-    test('CreateMultiChat_CRequested2ContactsToJoinChatRoom_ChatRoomHasBeenCreated', function() {
+    test('CreateMultiChat_RequestedContactsToJoinChatRoom_ChatRoomHasBeenCreated', function() {
         let DB = new Connection(DSN);
         DB.insert([
             {name:"contact #1", /*...*/},
@@ -55,6 +55,25 @@ suite('TelegramTests', function() {
         let chatRoom = Telegram.createMultiChat(contact1, contact2);
 
         assert.equal(chatRoom, Telegram.getChatRoomByID(chatRoom.getId()));
+
+        DB.truncate();
+    });
+
+
+    test('InviteToMultiChat_Requested3ContactsToJoinChatRoom_3ContactsAndMeAreInChatRoom', function() {
+        let DB = new Connection(DSN);
+        DB.insert([
+            {name:"contact #1", /*...*/},
+            {name:"contact #2", /*...*/},
+            {name:"contact #3", /*...*/},
+        ]);
+
+        let contact1 = Telegram.fetchContact(0),
+            contact2 = Telegram.fetchContact(1),
+            contact3 = Telegram.fetchContact(2);
+        let chatRoom = Telegram.createMultiChat(contact1, contact2, contact3);
+
+        assert.equal(3/*contacts*/ + 1/*me*/, Telegram.getChatRoomByID(chatRoom.getId()).getParticipants().length);
 
         DB.truncate();
     });
