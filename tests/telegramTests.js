@@ -77,4 +77,24 @@ suite('TelegramTests', function() {
 
         DB.truncate();
     });
+
+    test('SendMessageToMultiChat_ConnectedToMultiChat_MessageHasBeenSent', function() {
+        let DB = new Connection(DSN);
+        DB.insert([
+            {name:"contact #1", /*...*/},
+            {name:"contact #2", /*...*/},
+        ]);
+
+        let contact1 = Telegram.fetchContact(0),
+            contact2 = Telegram.fetchContact(1);
+        let chatRoom = Telegram.createMultiChat(contact1, contact2, contact3);
+        let message = "Hi there!";
+
+        chatRoom.sendMessage(message);
+
+        assert.equal(message, chatRoom.getLastUserMessage(Telegram.myself()).toString());
+
+        DB.truncate();
+    });
+
 });
