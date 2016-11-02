@@ -21,15 +21,15 @@ suite('TelegramTests', function() {
         test('equals to last sent message by me to my contact', function() {
             let contact = Telegram.fetchContact(0);
             let message = "Hi there!";
-            let res = contact.sendMessage(message);
 
-            assert.true(res);
+            contact.sendMessage(message);
+
             assert.equal(message, contact.getLastReceivedMessage().toString());
         });
     });
 
     suit("message I got", function(){
-        test('equals to message sender sent', function() {
+        test('equals to message sender sen', function() {
             let sender = new Telegram.TestContact();
             let messageSent = "Hi there!";
             Telegram.myself().onMessageReceive = onMessageReceiveHandler;
