@@ -9,8 +9,6 @@ import assert from 'assert'
 
 suite('TelegramTests', function() {
     test('ListAllContacts_LoadAllNContactsIHaveInLocalDB_GotListOfNContacts', function() {
-        DB.insert(records);
-
         let contacts = Telegram.fetchAllContacts();
 
         assert.equal(records.length, Telegram.getContactsLength());
