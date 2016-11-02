@@ -8,77 +8,76 @@ import assert from 'assert'
 
 
 suite('TelegramTests', function() {
-    test('ListAllContacts_LoadAllNContactsIHaveInLocalDB_GotListOfNContacts', function() {
-        let contacts = Telegram.fetchAllContacts();
+    suit('list of all contacts', function()  {
+        test('its length equals to quantity of all contacts', function () {
+            let contacts = Telegram.fetchAllContacts();
 
-        assert.equal(records.length, Telegram.getContactsLength());
+            assert.equal(records.length, Telegram.getContactsLength());
+        });
     });
 
 
-    test('SendMessage_ConnectedToContact_MessageHasBeenSent', function() {
-        let contact = Telegram.fetchContact(0);
-        let message = "Hi there!";
-        let res = contact.sendMessage(message);
+    suit("last received message by my contact from me", function() {
+        test('equals to last sent message by me to my contact', function() {
+            let contact = Telegram.fetchContact(0);
+            let message = "Hi there!";
+            let res = contact.sendMessage(message);
 
-        assert.true(res);
-        assert.equal(message, contact.getLastReceivedMessage().toString());
+            assert.true(res);
+            assert.equal(message, contact.getLastReceivedMessage().toString());
+        });
     });
 
-    test('CreateMultiChat_RequestedContactsToJoinChatRoom_ChatRoomHasBeenCreated', function() {
-        let contact1 = Telegram.fetchContact(0),
-            contact2 = Telegram.fetchContact(1);
+    suit("message I got", function(){
+        test('equals to message sender sent', function() {
+            let sender = new Telegram.TestContact();
+            let messageSent = "Hi there!";
+            Telegram.myself().onMessageReceive = onMessageReceiveHandler;
 
-        let chatRoom = Telegram.createMultiChat(contact1, contact2);
+            sender.connect(Telegram.myself()).send(messageSent);
 
-        assert.equal(chatRoom, Telegram.getChatRoomByID(chatRoom.getId()));
+            function onMessageReceiveHandler(messageGot) {
+                assert.equal(messageSent, messageGot);
+            }
+        });
     });
 
 
-    test('InviteToMultiChat_Requested3ContactsToJoinChatRoom_3ContactsAndMeAreInChatRoom', function() {
-        let contact1 = Telegram.fetchContact(0),
-            contact2 = Telegram.fetchContact(1),
-            contact3 = Telegram.fetchContact(2);
+    suit("when I create multichat", function() {
+        test('I can obtain it by id', function() {
+            let contact1 = Telegram.fetchContact(0),
+                contact2 = Telegram.fetchContact(1);
 
-        let chatRoom = Telegram.createMultiChat(contact1, contact2, contact3);
+            let chatRoom = Telegram.createMultiChat(contact1, contact2);
 
-        assert.equal(3/*contacts*/ + 1/*me*/, Telegram.getChatRoomByID(chatRoom.getId()).getParticipants().length);
-    });
+            assert.equal(chatRoom, Telegram.getChatRoomByID(chatRoom.getId()));
+        });
 
-    test('SendMessageToMultiChat_ConnectedToMultiChat_MessageHasBeenSent', function() {
-        let contact1 = Telegram.fetchContact(0),
-            contact2 = Telegram.fetchContact(1);
-        let chatRoom = Telegram.createMultiChat(contact1, contact2, contact3);
-        let message = "Hi there!";
+        suite("3 contacts invited", function(){
+            test("quantity of chat's participants equals to 3 plus me = 4", function() {
+                let contact1 = Telegram.fetchContact(0),
+                    contact2 = Telegram.fetchContact(1),
+                    contact3 = Telegram.fetchContact(2);
 
-        chatRoom.sendMessage(message);
+                let chatRoom = Telegram.createMultiChat(contact1, contact2, contact3);
 
-        assert.equal(message, chatRoom.getLastUserMessage(Telegram.myself()).toString());
+                assert.equal(3/*contacts*/ + 1/*me*/, Telegram.getChatRoomByID(chatRoom.getId()).getParticipants().length);
+            });
+        });
 
-        DB.truncate();
-    });
 
-    test('ReceiveMessage_InitSenderAndEmitMessage_MessageHasBeenReceived', function() {
-        let sender = new Telegram.TestContact();
-        let messageSent = "Hi there!";
-        Telegram.myself().onMessageReceive = onMessageReceiveHandler;
+        suit("the last message sent by me to the chat", function() {
+            test('last message by me obtained from chat room', function () {
+                let contact1 = Telegram.fetchContact(0),
+                    contact2 = Telegram.fetchContact(1);
+                let chatRoom = Telegram.createMultiChat(contact1, contact2);
+                let message = "Hi there!";
 
-        sender.connect(Telegram.myself()).send(messageSent);
+                chatRoom.sendMessage(message);
 
-        function onMessageReceiveHandler(messageGot) {
-            assert.equal(messageSent, messageGot);
-        };
-    });
-
-    test('ReceiveMessage_InitSenderAndEmitMessage_MessageHasBeenReceived', function() {
-        let sender = new Telegram.TestContact();
-        let messageSent = "Hi there!";
-        Telegram.myself().onMessageReceive = onMessageReceiveHandler;
-
-        sender.connect(Telegram.myself()).send(messageSent);
-
-        function onMessageReceiveHandler(messageGot) {
-            assert.equal(messageSent, messageGot);
-        };
+                assert.equal(message, chatRoom.getLastUsersMessage(Telegram.myself()).toString());
+            });
+        });
     });
 
 });
